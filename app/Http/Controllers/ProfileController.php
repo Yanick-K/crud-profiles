@@ -2,17 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProfileStatus;
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\ProfileResource;
 use App\Models\Profile;
-use Illuminate\Http\JsonResponse;
+use App\Services\ImageUploadService;
+use Illuminate\Database\QueryException;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProfileController extends Controller
 {
+    protected ImageUploadService $imageUploadService;
+
+    public function __construct(ImageUploadService $imageUploadService)
+    {
+        $this->imageUploadService = $imageUploadService;
+    }
+
     public function index(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
-        return ProfileResource::collection(Profile::all());
+        return ProfileResource::collection(Profile::where('status', ProfileStatus::ACTIVE)->get());
     }
 
     /**
@@ -29,7 +39,14 @@ class ProfileController extends Controller
     public function store(StoreProfileRequest $request)
     {
         $validated = $request->validated();
-        Profile::create($validated);
+
+        try {
+            $this->imageUploadService->handleImageUpload($request, $validated);
+            $profile = Profile::create($validated);
+            return response()->json(['message' => 'Profile created successfully.', 'data' => new ProfileResource($profile)]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -53,7 +70,19 @@ class ProfileController extends Controller
      */
     public function update(UpdateProfileRequest $request, Profile $profile)
     {
-        //
+        $validated = $request->validated();
+        try {
+            if ($request->action === 'update') {
+                $this->imageUploadService->handleImageUpload($request, $validated);
+                $profile->update($validated);
+                return response()->json(['message' => 'Profile updated successfully.', 'data' => new ProfileResource($profile)]);
+            } else {
+                $profile->delete();
+                return response()->json(['message' => 'Profile deleted successfully.']);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -61,6 +90,7 @@ class ProfileController extends Controller
      */
     public function destroy(Profile $profile)
     {
-        //
+        $profile->delete();
+        return response()->json(['message' => 'Profile deleted successfully.']);
     }
 }
