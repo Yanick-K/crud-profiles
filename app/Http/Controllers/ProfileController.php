@@ -9,6 +9,7 @@ use App\Http\Resources\ProfileResource;
 use App\Models\Profile;
 use App\Services\ImageUploadService;
 use Illuminate\Database\QueryException;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProfileController extends Controller
@@ -30,7 +31,7 @@ class ProfileController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Create');
     }
 
     /**
@@ -43,7 +44,7 @@ class ProfileController extends Controller
         try {
             $this->imageUploadService->handleImageUpload($request, $validated);
             $profile = Profile::create($validated);
-            return response()->json(['message' => 'Profile created successfully.', 'data' => new ProfileResource($profile)]);
+            return response()->json(['message' => 'Profile created successfully.', 'data' => new ProfileResource($profile)], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -62,7 +63,7 @@ class ProfileController extends Controller
      */
     public function edit(Profile $profile)
     {
-        //
+        return Inertia::render('Edit', ['profile' => new ProfileResource($profile)]);
     }
 
     /**
@@ -75,7 +76,7 @@ class ProfileController extends Controller
             if ($request->action === 'update') {
                 $this->imageUploadService->handleImageUpload($request, $validated);
                 $profile->update($validated);
-                return response()->json(['message' => 'Profile updated successfully.', 'data' => new ProfileResource($profile)]);
+                return response()->json(['message' => 'Profile updated successfully.', 'data' => new ProfileResource($profile)], Response::HTTP_OK);
             } else {
                 $profile->delete();
                 return response()->json(['message' => 'Profile deleted successfully.']);

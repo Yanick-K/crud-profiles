@@ -14,7 +14,7 @@ class ProfileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $exceptColumns = ['id', 'created_at', 'updated_at'];
+        $exceptColumns = ['created_at', 'updated_at'];
 
         if (!auth('sanctum')->check()) {
              $exceptColumns[] = 'status';
