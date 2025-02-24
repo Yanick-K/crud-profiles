@@ -20,12 +20,12 @@ Route::controller(ProfileController::class)->group(function () {
 
 Route::post('/tokens/create', function (Request $request) {
 
-    //$user = User::where('email', $request->email)->first();
+    $request->validate([
+        'email' => 'required|string|email|exists:users,email',
+        'password' => 'required|string'
+    ]);
 
-    //permettre une meilleure auth de l'utilisateur
-
-
-    $user = User::all()->first();
+    $user = User::where('email', $request->email)->where('password', bcrypt($request->password))->first();
     $token = $user->createToken('api-auth');
 
     return ['token' => $token->plainTextToken];
