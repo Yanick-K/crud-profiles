@@ -20,7 +20,6 @@ class ProfileFactory extends Factory
         return [
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
-            'status' => $this->faker->randomElement(ProfileStatus::values()),
         ];
     }
 }

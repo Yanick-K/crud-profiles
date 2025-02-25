@@ -99,7 +99,7 @@ class ProfileEntityTest extends TestCase
     {
         Sanctum::actingAs($this->user, ['*']);
 
-        Profile::factory()->count(3)->create(['status' => 'active']);
+        Profile::factory()->count(3)->create();
 
         $response = $this->getJson('/api/profiles');
 
