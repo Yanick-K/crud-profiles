@@ -11,7 +11,7 @@ Route::get('/', function () {
 })->name('dashboard');
 
 Route::get('/create', [ProfileController::class, 'create'])->name('profile.create');
-Route::get('/edit/{profile}', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::get('/edit/{profile}', [ProfileController::class, 'edit'])->name('profile-entity.edit');
 
 
 Route::middleware('auth')->group(function () {
