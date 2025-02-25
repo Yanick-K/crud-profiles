@@ -25,7 +25,7 @@ class UpdateProfileRequest extends FormRequest
             'last_name' => ['required_if:action,update', 'string', 'max:255'],
             'first_name' => ['required_if:action,update', 'string', 'max:255'],
             'status' => ['required_if:action,update', Rule::enum(ProfileStatus::class)],
-            'image' => ['sometimes', 'nullable', 'file', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'image' => ['sometimes', 'file', 'mimes:png,jpg,jpeg', 'max:2048'],
         ];
     }
 }

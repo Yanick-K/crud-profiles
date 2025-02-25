@@ -35,7 +35,10 @@ function submit() {
   formData.append('first_name', form.first_name);
   formData.append('last_name', form.last_name);
   formData.append('status', form.status);
-  formData.append('image', form.image);
+
+  if (form.image instanceof File) {
+    formData.append('image', form.image);
+  }
 
   axios.post('/api/profiles', formData).then((response) => {
     if (response.status === 201) {
