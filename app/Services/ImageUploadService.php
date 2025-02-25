@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use Illuminate\Http\UploadedFile;
+use Symfony\Component\HttpFoundation\Response;
 
 class ImageUploadService
 {

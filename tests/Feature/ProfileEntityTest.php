@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -19,23 +21,18 @@ class ProfileEntityTest extends TestCase
     {
         parent::setUp();
 
-        // Création d'un utilisateur
-        $this->profile = Profile::factory()->create();
-
-        // Authentification via Sanctum
-        Sanctum::actingAs($this->profile->user, ['*']);
+        $this->user = User::factory()->create();
     }
 
-    /**
-     * Test creating a profile with an image file.
-     */
     public function testCreateProfileWithImage()
     {
-        Storage::fake('public'); // Utiliser un fake pour les fichiers
+        Sanctum::actingAs($this->user, ['*']);
+
+        Storage::fake('public');
 
         $data = [
-            'firstName' => 'John',
-            'lastName' => 'Doe',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
             'status' => 'active',
             'image' => \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'),
         ];
@@ -48,25 +45,27 @@ class ProfileEntityTest extends TestCase
             'last_name' => 'Doe',
             'status' => 'active',
         ]);
-        Storage::disk('public')->assertExists('avatars/' . $data['image']->hashName());
+        Storage::disk('public')->assertExists('uploads/' . $data['image']->hashName());
     }
 
-    /**
-     * Test updating a profile.
-     */
     public function testUpdateProfile()
     {
+        Sanctum::actingAs($this->user, ['*']);
+
         $profile = Profile::factory()->create();
 
         $data = [
-            'firstName' => 'Jane',
-            'lastName' => 'Doe',
+            'action' => 'update',
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
             'status' => 'inactive',
         ];
 
         $response = $this->putJson("/api/profiles/{$profile->id}", $data);
 
         $response->assertStatus(200);
+        $this->assertDatabaseCount('profiles', 1);
+
         $this->assertDatabaseHas('profiles', [
             'id' => $profile->id,
             'first_name' => 'Jane',
@@ -75,44 +74,57 @@ class ProfileEntityTest extends TestCase
         ]);
     }
 
-    /**
-     * Test deleting a profile.
-     */
     public function testDeleteProfile()
     {
+        Sanctum::actingAs($this->user, ['*']);
+
         $profile = Profile::factory()->create();
 
         $response = $this->deleteJson("/api/profiles/{$profile->id}");
 
         $response->assertStatus(200);
-        $this->assertDeleted($profile);
+        $this->assertDatabaseMissing('profiles', Arr::except($profile->toArray(), ['image', 'created_at', 'updated_at']));
+
+        // test delete in update endpoint method
+
+        $profile = Profile::factory()->create();
+
+        $response = $this->putJson("/api/profiles/{$profile->id}", ['action' => 'delete']);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('profiles', Arr::except($profile->toArray(), ['image', 'created_at', 'updated_at']));
     }
 
-    /**
-     * Test retrieving profiles.
-     */
     public function testGetProfiles()
     {
+        Sanctum::actingAs($this->user, ['*']);
+
+        Profile::factory()->count(3)->create(['status' => 'active']);
+
         $response = $this->getJson('/api/profiles');
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            '*' => ['id', 'firstName', 'lastName', 'status', 'image'],
+            'data' => [
+                '*' => ['id', 'first_name', 'last_name', 'status', 'image']
+                ],
         ]);
     }
 
-    /**
-     * Test authentication for Sanctum-protected endpoints.
-     */
-    public function testAuthenticatedProfileOnly()
+    public function testWithoutAuth()
     {
-        // Authentification
-        $response = $this->postJson('/api/profiles', []);
-        $response->assertStatus(401);
+        $response = $this->getJson('/api/profiles');
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => ['id', 'first_name', 'last_name', 'image']
+            ],
+        ]);
 
-        // Authentification correcte
-        Sanctum::actingAs($this->profile->user, ['*']);
-        $response = $this->postJson('/api/profiles', []);
-        $response->assertStatus(201);
+        $profile = Profile::factory()->create();
+
+        $response = $this->deleteJson("/api/profiles/{$profile->id}");
+
+        $response->assertStatus(401);
     }
 }

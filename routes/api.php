@@ -12,7 +12,8 @@ Route::get('/user', function (Request $request) {
 Route::controller(ProfileController::class)->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
        Route::post('/profiles', 'store');
-       Route::put('/profile/{profile}', 'update');
+       Route::put('/profiles/{profile}', 'update');
+       Route::delete('/profiles/{profile}', 'destroy');
     });
     Route::get('/profiles/{profile}', 'show');
     Route::get('/profiles', 'index');

@@ -13,7 +13,7 @@ class UpdateProfileRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth('sanctum')->check();
     }
 
     /**
@@ -25,9 +25,9 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'action' => ['required', Rule::in('update', 'delete')],
-            'last_name' => ['required', 'string', 'max:255'],
-            'first_name' => ['required', 'string', 'max:255'],
-            'status' => ['required', Rule::enum(ProfileStatus::class)],
+            'last_name' => ['required_if:action,update', 'string', 'max:255'],
+            'first_name' => ['required_if:action,update', 'string', 'max:255'],
+            'status' => ['required_if:action,update', Rule::enum(ProfileStatus::class)],
             'image' => ['sometimes', 'nullable', 'file', 'mimes:png,jpg,jpeg', 'max:2048'],
         ];
     }
