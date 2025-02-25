@@ -8,7 +8,7 @@ use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\ProfileResource;
 use App\Models\Profile;
 use App\Services\ImageUploadService;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,18 +26,12 @@ class ProfileController extends Controller
         return ProfileResource::collection(Profile::where('status', ProfileStatus::ACTIVE)->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): \Inertia\Response
     {
         return Inertia::render('Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreProfileRequest $request)
+    public function store(StoreProfileRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -50,26 +44,17 @@ class ProfileController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Profile $profile): ProfileResource
     {
         return new ProfileResource($profile);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Profile $profile)
+    public function edit(Profile $profile): \Inertia\Response
     {
-        return Inertia::render('Edit', ['profile' => new ProfileResource($profile)]);
+        return Inertia::render('Edit', ['profile' => new ProfileResource($profile), 'storageUrl' => asset('storage')]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateProfileRequest $request, Profile $profile)
+    public function update(UpdateProfileRequest $request, Profile $profile): JsonResponse
     {
         $validated = $request->validated();
         try {
@@ -86,10 +71,7 @@ class ProfileController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Profile $profile)
+    public function destroy(Profile $profile): JsonResponse
     {
         $profile->delete();
         return response()->json(['message' => 'Profile deleted successfully.']);

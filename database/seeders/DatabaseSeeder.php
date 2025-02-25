@@ -10,11 +10,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@admin.com',
-            'password' => bcrypt('secret'),
-        ]);
         $this->call([ProfileSeeder::class]);
     }
 }
