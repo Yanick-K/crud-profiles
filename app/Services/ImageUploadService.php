@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,11 +18,10 @@ class ImageUploadService
     }
 
     /**
-     * Handle image upload.
+     * @return array<string, int|bool|string>
      */
     public function upload(UploadedFile $file, string $directory = 'uploads'): array
     {
-        try {
             $path = $file->store($directory, $this->disk);
 
             if (!$path) {
@@ -38,22 +38,9 @@ class ImageUploadService
                 'message' => 'Image uploaded successfully',
                 'status' => Response::HTTP_CREATED,
             ];
-
-        } catch (\Exception $e) {
-            Log::error('Image upload error: ' . $e->getMessage());
-
-            return [
-                'success' => false,
-                'message' => 'An unexpected error occurred during image upload',
-                'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
-            ];
-        }
     }
 
-    /**
-     * Process image upload from request and update validated data
-     */
-    public function handleImageUpload(StoreProfileRequest|UpdateProfileRequest $request, array &$validated, string $fieldName = 'image', string $directory = 'uploads')
+    public function handleImageUpload(StoreProfileRequest|UpdateProfileRequest $request, array &$validated, string $fieldName = 'image', string $directory = 'uploads') : ?JsonResponse
     {
         if ($request->hasFile($fieldName)) {
             $uploadResult = $this->upload($request->file($fieldName), $directory);
@@ -64,6 +51,7 @@ class ImageUploadService
 
             $validated[$fieldName] = $uploadResult['path'];
         }
+        return null;
     }
 
 }

@@ -8,7 +8,6 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\table;
 
-
 class CreateAdminUser extends Command
 {
     /**
@@ -40,7 +39,5 @@ class CreateAdminUser extends Command
             error($e->getMessage());
             return self::FAILURE;
         }
-
-
     }
 }

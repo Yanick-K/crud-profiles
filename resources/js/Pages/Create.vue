@@ -37,13 +37,13 @@ function submit() {
   formData.append('status', form.status);
   formData.append('image', form.image);
 
-    axios.post('/api/profiles', formData).then((response) => {
-        if (response.status === 201) {
-            isSaved.value = true;
-            form.reset();
-        }
+  axios.post('/api/profiles', formData).then((response) => {
+    if (response.status === 201) {
+      isSaved.value = true;
+      form.reset();
+    }
 
-    }).catch((error) => console.error(error))
+  }).catch((error) => console.error(error))
 }
 </script>
 <template>
