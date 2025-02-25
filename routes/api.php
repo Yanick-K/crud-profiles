@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -26,8 +27,11 @@ Route::post('/tokens/create', function (Request $request) {
         'password' => 'required|string'
     ]);
 
-    $user = User::where('email', $request->email)->where('password', bcrypt($request->password))->first();
-    $token = $user->createToken('api-auth');
+    $user = User::where('email', $request->email)->first();
 
-    return ['token' => $token->plainTextToken];
+    if (Hash::check($request->password, $user->password)) {
+        $token = $user->createToken('api-auth');
+        return ['token' => $token->plainTextToken];
+    }
+    return 'Invalid credentials';
 });
