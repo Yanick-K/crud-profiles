@@ -30,3 +30,5 @@ Puis suivre les intructions
 
 ---
 
+Documentation pour la liste des endpoints
+https://documenter.getpostman.com/view/10094201/2sAYdfoVzD
